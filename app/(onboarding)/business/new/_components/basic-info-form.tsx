@@ -194,7 +194,7 @@ export default function BasicInfoForm({
                                 )}
                             </div>
                             <FormDescription>
-                                This will be your unique URL: example.com/business/{watchSlug || 'your-slug'}
+                                This will be your unique URL: tempahdulu.my/{watchSlug || 'your-slug'}
                             </FormDescription>
                             <FormMessage />
                         </FormItem>

@@ -36,25 +36,16 @@ const timezones = [
     "Pacific/Auckland", // New Zealand Time
 ]
 
-const daysList = [
-    { id: "monday", label: "Monday" },
-    { id: "tuesday", label: "Tuesday" },
-    { id: "wednesday", label: "Wednesday" },
-    { id: "thursday", label: "Thursday" },
-    { id: "friday", label: "Friday" },
-    { id: "saturday", label: "Saturday" },
-    { id: "sunday", label: "Sunday" },
-]
-
 
 export default function BusinessHoursForm({
+    daysList,
     setDaysList,
     form
 }: {
+    daysList: { id: string, label: string }[],
     setDaysList: (daysList: { id: string, label: string }[]) => void,
     form: UseFormReturn<BusinessFormValues>
 }) {
-    const initialOperatingDays: Record<string, { isOpen: boolean, openTime: string, closeTime: string }> = {}
 
     return (
         <Card>

@@ -6,24 +6,8 @@ import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import {
     Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
 
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { Loader2, Building, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -31,6 +15,19 @@ import { businessSchema } from "@/types/business"
 import { BusinessFormValues } from "@/types/business"
 import BasicInfoForm from "./_components/basic-info-form"
 import BusinessHoursForm from "./_components/business-hours.form"
+import AlertConfirmation from "./_components/alert-confirmation"
+import ReviewForm from "./_components/review-form"
+import { createBusiness } from "@/app/_actions/create-business.action"
+
+const DAYS_LIST = [
+    { id: "monday", label: "Monday" },
+    { id: "tuesday", label: "Tuesday" },
+    { id: "wednesday", label: "Wednesday" },
+    { id: "thursday", label: "Thursday" },
+    { id: "friday", label: "Friday" },
+    { id: "saturday", label: "Saturday" },
+    { id: "sunday", label: "Sunday" },
+]
 
 type StepProps = {
     step: number;
@@ -72,11 +69,20 @@ export default function BusinessNewPage() {
     const [currentStep, setCurrentStep] = useState(1)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null)
-    const [daysList, setDaysList] = useState<{ id: string, label: string }[]>([])
-
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
     // Initialize operating days
     const initialOperatingDays: Record<string, { isOpen: boolean, openTime?: string, closeTime?: string }> = {}
+    const [daysList, setDaysList] = useState<{ id: string, label: string }[]>(
+        DAYS_LIST.map(day => {
+            initialOperatingDays[day.id] = {
+                isOpen: day.id !== "saturday" && day.id !== "sunday",
+                openTime: "09:00",
+                closeTime: "17:00"
+            }
+            return day
+        })
+    )
 
     const form = useForm<BusinessFormValues>({
         resolver: zodResolver(businessSchema),
@@ -102,10 +108,12 @@ export default function BusinessNewPage() {
         setIsSubmitting(true)
         try {
             // Here you would send the data to your API
-            console.log("Submitting business data:", data)
+            const { error } = await createBusiness(data)
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000))
+            if (error) {
+                toast.error(error)
+                return
+            }
 
             toast.success("Your business profile has been created successfully!")
 
@@ -116,7 +124,12 @@ export default function BusinessNewPage() {
             toast.error("Could not create business. Please try again.")
         } finally {
             setIsSubmitting(false)
+            setShowConfirmDialog(false)
         }
+    }
+
+    const handleSubmitClick = () => {
+        setShowConfirmDialog(true)
     }
 
     const nextStep = async () => {
@@ -158,73 +171,14 @@ export default function BusinessNewPage() {
                 )
             case 2:
                 return (
-                    <BusinessHoursForm setDaysList={setDaysList} form={form} />
+                    <BusinessHoursForm daysList={daysList} setDaysList={setDaysList} form={form} />
                 )
             case 3:
                 return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Confirmation</CardTitle>
-                            <CardDescription>
-                                Review your business information before creating your profile.
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-sm font-medium mb-2">Basic Information</h3>
-                                    <Separator className="mb-4" />
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Business Name</p>
-                                        <p>{formValues.name}</p>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <p className="text-sm font-medium text-muted-foreground">URL</p>
-                                        <p>example.com/business/{formValues.slug}</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Description</p>
-                                    <p className="whitespace-pre-line">{formValues.description}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-sm font-medium mb-2">Business Hours</h3>
-                                    <Separator className="mb-4" />
-                                </div>
-
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Timezone</p>
-                                    <p>{formValues.timezone}</p>
-                                </div>
-
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground mb-2">Operating Hours</p>
-                                    <div className="space-y-2">
-                                        {daysList.map(day => {
-                                            const dayData = formValues.operatingDays[day.id];
-                                            return (
-                                                <div key={day.id} className="flex justify-between py-1 border-b border-dashed last:border-b-0">
-                                                    <span className="font-medium">{day.label}</span>
-                                                    <span>
-                                                        {dayData.isOpen
-                                                            ? `${dayData.openTime} - ${dayData.closeTime}`
-                                                            : "Closed"}
-                                                    </span>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <ReviewForm
+                        formValues={formValues}
+                        daysList={daysList}
+                    />
                 )
             default:
                 return null
@@ -286,7 +240,11 @@ export default function BusinessNewPage() {
                                 Continue
                             </Button>
                         ) : (
-                            <Button type="submit" disabled={isSubmitting}>
+                            <Button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={handleSubmitClick}
+                            >
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -300,6 +258,14 @@ export default function BusinessNewPage() {
                     </div>
                 </form>
             </Form>
+
+            <AlertConfirmation
+                showConfirmDialog={showConfirmDialog}
+                setShowConfirmDialog={setShowConfirmDialog}
+                form={form}
+                onSubmit={onSubmit}
+                isSubmitting={isSubmitting}
+            />
         </div>
     )
 }
