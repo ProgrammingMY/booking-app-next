@@ -18,6 +18,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Switch } from "@/components/ui/switch"
 import { timeSlotFormSchema, TimeSlotFormValues } from "@/types/timeslot"
+import { createTimeSlot } from "@/app/_actions/create-timeslot-action"
+import { useRouter } from "next/navigation"
 
 
 
@@ -31,6 +33,7 @@ const defaultValues: Partial<TimeSlotFormValues> = {
 }
 
 export default function TimeSlotForm() {
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     // Initialize the form
@@ -43,16 +46,17 @@ export default function TimeSlotForm() {
     async function onSubmit(data: TimeSlotFormValues) {
         setIsSubmitting(true)
         try {
-            // Here you would typically send the data to your API
-            console.log(data)
+            const { error } = await createTimeSlot(data);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            if (error) {
+                toast.error(error)
+                return
+            }
 
             toast.success(`Successfully created "${data.name}" time slot.`)
 
             // Reset the form
-            form.reset(defaultValues)
+            router.push("/time-slots")
         } catch (error) {
             toast.error("Could not create time slot. Please try again.")
         } finally {

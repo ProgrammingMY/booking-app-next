@@ -9,32 +9,38 @@ import "server-only"
 import { eq } from "drizzle-orm"
 
 export async function createTimeSlot(unsafeData: TimeSlotFormValues) {
-    const { user } = await authenticateUser();
+    try {
+        const { user } = await authenticateUser();
 
-    // check if the user owns the business
-    const businessOwned = await db.query.business.findFirst({
-        where: eq(business.ownerId, user.id)
-    })
+        // check if the user owns the business
+        const businessOwned = await db.query.business.findFirst({
+            where: eq(business.ownerId, user.id)
+        })
 
-    if (!businessOwned) {
-        return { error: "You do not own any business" }
+        if (!businessOwned) {
+            return { error: "You do not own any business" }
+        }
+
+        const { success, data } = timeSlotFormSchema.safeParse(unsafeData)
+
+        if (!success) {
+            return { error: "Invalid data" }
+        }
+
+
+        // create the time slot
+        await db.insert(timeSlot).values({
+            name: data.name,
+            businessId: businessOwned.id,
+            description: data.description,
+            duration: data.durationInMinutes,
+            capacity: data.capacity,
+            isActive: data.isActive,
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error(error)
+        return { error: "Failed to create time slot" }
     }
-
-    const { success, data } = timeSlotFormSchema.safeParse(unsafeData)
-
-    if (!success) {
-        return { error: "Invalid data" }
-    }
-
-
-
-    // create the time slot
-    const newTimeSlot = await db.insert(timeSlot).values({
-        name: data.name,
-        businessId: businessOwned.id,
-        description: data.description,
-        duration: data.durationInMinutes,
-        capacity: data.capacity,
-        isActive: data.isActive,
-    })
 }
