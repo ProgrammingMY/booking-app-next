@@ -1,6 +1,7 @@
-import { pgTable, text, timestamp, boolean, integer, jsonb, uuid, pgEnum, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, uuid, pgEnum, index, json } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 import { relations } from "drizzle-orm";
+import { BusinessOperatingHours } from "@/types/business";
 
 // Business table - owned by users
 export const business = pgTable("business", {
@@ -8,7 +9,8 @@ export const business = pgTable("business", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  operatingHours: jsonb("operating_hours").notNull(), // JSON structure for days and hours
+  timezone: text("timezone").notNull(),
+  operatingHours: json("operating_hours").$type<BusinessOperatingHours>().notNull(), // JSON structure for days and hours
   ownerId: text("owner_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()

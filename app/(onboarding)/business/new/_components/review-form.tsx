@@ -68,7 +68,7 @@ export default function ReviewForm({
                                     <div key={day.id} className="flex justify-between py-1 border-b border-dashed last:border-b-0">
                                         <span className="font-medium">{day.label}</span>
                                         <span>
-                                            {dayData.isOpen
+                                            {dayData?.isOpen
                                                 ? `${dayData.openTime} - ${dayData.closeTime}`
                                                 : "Closed"}
                                         </span>

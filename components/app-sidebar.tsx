@@ -24,12 +24,7 @@ const BusinessMenuItems = [
     {
         label: "Business Settings",
         icon: Settings,
-        href: "/business-settings"
-    },
-    {
-        label: "Customers",
-        icon: Users,
-        href: "/customers"
+        href: "/business"
     },
 ]
 
@@ -37,7 +32,7 @@ const SettingsMenuItems = [
     {
         label: "Account Settings",
         icon: Settings,
-        href: "/account-settings"
+        href: "/account"
     }
 ]
 export default function AppSidebar() {

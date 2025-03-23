@@ -72,7 +72,7 @@ export default function BusinessNewPage() {
     const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
     // Initialize operating days
-    const initialOperatingDays: Record<string, { isOpen: boolean, openTime?: string, closeTime?: string }> = {}
+    const initialOperatingDays: Record<string, { isOpen: boolean, openTime: string, closeTime: string }> = {}
     const [daysList, setDaysList] = useState<{ id: string, label: string }[]>(
         DAYS_LIST.map(day => {
             initialOperatingDays[day.id] = {

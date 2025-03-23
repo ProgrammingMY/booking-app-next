@@ -1,0 +1,1 @@
+ALTER TABLE "business" ALTER COLUMN "operating_hours" SET DATA TYPE json;

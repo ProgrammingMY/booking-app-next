@@ -4,8 +4,6 @@ import { FormMessage } from "@/components/ui/form";
 import { Card, CardTitle, CardDescription, CardHeader, CardContent } from "@/components/ui/card";
 import { FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
 import {
     Select,
     SelectContent,

@@ -45,10 +45,6 @@ export default function OwnerDashboard() {
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Dashboard</h1>
-            <Button className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Create Business
-            </Button>
           </div>
 
           <Tabs defaultValue="overview" className="w-full">
@@ -316,46 +312,6 @@ export default function OwnerDashboard() {
                       ))}
                       <div className="pt-4">
                         <Button>Edit Hours</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="md:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                    <CardDescription>Manage your account preferences</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-col md:flex-row gap-8">
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <h3 className="text-sm font-medium mb-2">Name</h3>
-                          <p className="text-sm text-muted-foreground">{data.user.name}</p>
-                        </div>
-                        <Separator />
-                        <div>
-                          <h3 className="text-sm font-medium mb-2">Email</h3>
-                          <p className="text-sm text-muted-foreground">{data.user.email}</p>
-                        </div>
-                        <div className="pt-4">
-                          <Button>Edit Profile</Button>
-                        </div>
-                      </div>
-                      <Separator orientation="vertical" className="hidden md:block" />
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <h3 className="text-sm font-medium mb-2">Notification Preferences</h3>
-                          <p className="text-sm text-muted-foreground">Email notifications enabled</p>
-                        </div>
-                        <Separator />
-                        <div>
-                          <h3 className="text-sm font-medium mb-2">Security</h3>
-                          <p className="text-sm text-muted-foreground">Last password change: Never</p>
-                        </div>
-                        <div className="pt-4">
-                          <Button variant="outline">Change Password</Button>
-                        </div>
                       </div>
                     </div>
                   </CardContent>
