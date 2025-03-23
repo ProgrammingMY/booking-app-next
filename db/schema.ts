@@ -1,15 +1,6 @@
-import { pgTable, text, timestamp, boolean, integer, jsonb, uuid, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, jsonb, uuid, pgEnum, index } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
-
-// Enum for business types
-export const businessTypeEnum = pgEnum("business_type", [
-  "restaurant",
-  "salon",
-  "clinic",
-  "fitness",
-  "consultation",
-  "other"
-]);
+import { relations } from "drizzle-orm";
 
 // Business table - owned by users
 export const business = pgTable("business", {
@@ -17,7 +8,6 @@ export const business = pgTable("business", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  businessType: businessTypeEnum("business_type").notNull(),
   operatingHours: jsonb("operating_hours").notNull(), // JSON structure for days and hours
   ownerId: text("owner_id").notNull().references(() => user.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -30,8 +20,6 @@ export const timeSlot = pgTable("time_slot", {
   businessId: uuid("business_id").notNull().references(() => business.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
   duration: integer("duration_minutes").notNull(), // Duration in minutes
   capacity: integer("capacity").notNull().default(1), // How many reservations can be made for this slot
   location: text("location"), // Physical location
@@ -39,7 +27,9 @@ export const timeSlot = pgTable("time_slot", {
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
-});
+}, (table) => ([
+  index("timeslot_business_id_index").on(table.businessId)
+]));
 
 // Reservation status enum
 export const reservationStatusEnum = pgEnum("reservation_status", [
@@ -68,6 +58,7 @@ export const reservation = pgTable("reservation", {
 // For tracking availability and managing recurring time slots
 export const availability = pgTable("availability", {
   id: uuid("id").defaultRandom().primaryKey(),
+  timezoneId: uuid("timezone_id").notNull().references(() => timezone.id, { onDelete: "cascade" }),
   businessId: uuid("business_id").notNull().references(() => business.id, { onDelete: "cascade" }),
   dayOfWeek: integer("day_of_week").notNull(), // 0-6 for Sunday-Saturday
   startTime: text("start_time").notNull(), // Format: "HH:MM" in 24h
@@ -76,15 +67,26 @@ export const availability = pgTable("availability", {
   isAvailable: boolean("is_available").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
-});
+}, (table) => ([
+  index("business_id_index").on(table.businessId),
+  index("timezone_id_index").on(table.timezoneId)
+]));
 
-// For special dates (holidays, special events)
-export const specialDate = pgTable("special_date", {
+export const availabilityRelations = relations(availability, ({ one }) => ({
+  timezone: one(timezone, {
+    fields: [availability.timezoneId],
+    references: [timezone.id]
+  })
+}));
+
+export const timezone = pgTable("timezone", {
   id: uuid("id").defaultRandom().primaryKey(),
   businessId: uuid("business_id").notNull().references(() => business.id, { onDelete: "cascade" }),
-  date: timestamp("date").notNull(),
-  name: text("name").notNull(),
-  isAvailable: boolean("is_available").notNull().default(false),
+  timezone: text("timezone").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow()
 });
+
+export const timezoneRelations = relations(timezone, ({ many }) => ({
+  availabilities: many(availability)
+}));

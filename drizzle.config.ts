@@ -4,7 +4,6 @@ export default {
     schema: [
         "./db/schema.ts",
         "./db/auth-schema.ts",
-        "./db/rent-schema.ts"
     ],
     out: "./migrations",
     dialect: "postgresql",
